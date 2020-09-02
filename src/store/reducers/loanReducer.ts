@@ -1,4 +1,4 @@
-import { LoanState, LoanActionTypes, ADD_LOAN, DELETE_LOAN, UPDATE_LOAN } from "../types/loanTypes";
+import { LoanState, LoanActionType, LoanActions} from "../types/loanTypes";
 
 const initState: LoanState = {
     loans: [
@@ -9,20 +9,22 @@ const initState: LoanState = {
     ]
 }
 
-const loanReducer = (state: LoanState = initState, action: LoanActionTypes): LoanState => {
+const loanReducer = (state: LoanState = initState, action: LoanActions): LoanState => {
     switch (action.type) {
-        case ADD_LOAN:
+        case LoanActionType.ADD_LOAN:
             return {
                 loans: [...state.loans, action.loan]
             }
-        case DELETE_LOAN: 
+        case LoanActionType.DELETE_LOAN: 
             return {
                 loans: state.loans.filter(loan => loan.loanId !== action.id)
             }
-        case UPDATE_LOAN:
+        case LoanActionType.UPDATE_LOAN:
             return {
                 loans: state.loans.map(loan => (loan.loanId !== action.loan.loanId) ? loan : {...loan, ...action.loan})
             }
+        case LoanActionType.GET_LOANS:
+            return state;
         default:
             return state;
     }
