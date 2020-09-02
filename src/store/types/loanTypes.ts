@@ -11,24 +11,32 @@ export interface LoanState {
     loans: Array<Loan>
 }
 
-export const ADD_LOAN = 'ADD_LOAN'
-export const DELETE_LOAN = 'DELETE_LOAN'
-export const UPDATE_LOAN = 'UPDATE_LOAN'
+export enum LoanActionType {
+    ADD_LOAN = 'ADD_LOAN',
+    DELETE_LOAN = 'DELETE_LOAN',
+    UPDATE_LOAN = 'UPDATE_LOAN',
+    GET_LOANS = 'GET_LOANS'   
+}
+
 
 
 interface AddLoanAction {
-  type: typeof ADD_LOAN
+  type: LoanActionType.ADD_LOAN
   loan: Loan
 }
 
 interface DeleteLoanAction {
-    type: typeof DELETE_LOAN
+    type: LoanActionType.DELETE_LOAN
     id: number
 }
 
 interface UpdateLoanAction {
-    type: typeof UPDATE_LOAN
+    type: LoanActionType.UPDATE_LOAN
     loan: Loan
 }
 
-export type LoanActionTypes = AddLoanAction | DeleteLoanAction | UpdateLoanAction
+interface GetLoansAction {
+    type: LoanActionType.GET_LOANS
+}
+
+export type LoanActions = AddLoanAction | DeleteLoanAction | UpdateLoanAction | GetLoansAction
