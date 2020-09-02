@@ -15,7 +15,7 @@ const LoanDetail: FunctionComponent<Props> = ({loanInfo, handleClick}) => {
                 <ul>
                     {(loanInfo.loanCollateral && loanInfo.loanCollateral.map((c) => {
                         return (
-                            <li key={c.collateralId}>`Type: ${c.type.toString()}; Value: ${c.value}`</li>
+                            <li key={c.id}>`Type: ${c.type.toString()}; Value: ${c.value}`</li>
                         )
                     }))}
                 </ul>

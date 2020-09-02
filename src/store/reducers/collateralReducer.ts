@@ -1,32 +1,41 @@
-import { collateralType, CollateralState, CollateralActionTypes, ADD_COLLATERAL, DELETE_COLLATERAL, UPDATE_COLLATERAL } from "../types/collateralTypes";
+import { CollateralState, CollateralActions, CollateralActionType, Collateral } from "../types/collateralTypes";
 
 const initState: CollateralState = {
     collateral: [
-        {collateralId: 1, loanId: 1, type: collateralType.Building, value: 14000},
-        {collateralId: 2, loanId: 3, type: collateralType.Land, value: 14000},
-        {collateralId: 3, loanId: 2, type: collateralType.Cash, value: 14000},
-        {collateralId: 4, loanId: 2, type: collateralType.Cash, value: 14000}
+        {id: 1, loanId: 1, type: "buliding", value: 14000},
+        {id: 2, loanId: 3, type: "land", value: 14000},
+        {id: 3, loanId: 2, type: "cash", value: 14000},
+        {id: 4, loanId: 2, type: "cash", value: 14000}
     ]
 }
 
-const collateralReducer = (state: CollateralState = initState, action: CollateralActionTypes): CollateralState => {
+const collateralReducer = (state: CollateralState = initState, action: CollateralActions): CollateralState => {
     switch (action.type) {
-        case ADD_COLLATERAL:
+        case CollateralActionType.ADD_COLLATERAL:
             return {
-                collateral: [...state.collateral, action.collateral]
+                collateral: [...state.collateral, createNewCollateral(state, action.collateral)]
             }
-        case DELETE_COLLATERAL: 
+        case CollateralActionType.DELETE_COLLATERAL: 
             return {
-                collateral: state.collateral.filter(item => item.collateralId !== action.id)
+                collateral: state.collateral.filter(item => !action.ids.includes(item.id as number))
             }
-        case UPDATE_COLLATERAL:
+        case CollateralActionType.UPDATE_COLLATERAL:
             return {
-                collateral: state.collateral.map(item => (item.collateralId !== action.collateral.collateralId) ? item : {...item, ...action.collateral})
+                collateral: state.collateral.map(item => (item.id !== action.collateral.id) ? item : {...item, ...action.collateral})
             }
         default:
             return state;
     }
     
+}
+
+const createNewCollateral = (state: CollateralState, newCollateral: Collateral): Collateral => {
+    debugger;
+    let currentIds = state.collateral.map(c => c.id as number)
+    let nextId = Math.max(...currentIds) + 1
+    let returnItem = {...newCollateral, id: nextId}
+    console.log(returnItem)
+    return returnItem
 }
 
 export default collateralReducer

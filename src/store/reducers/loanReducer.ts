@@ -23,8 +23,6 @@ const loanReducer = (state: LoanState = initState, action: LoanActions): LoanSta
             return {
                 loans: state.loans.map(loan => (loan.loanId !== action.loan.loanId) ? loan : {...loan, ...action.loan})
             }
-        case LoanActionType.GET_LOANS:
-            return state;
         default:
             return state;
     }
