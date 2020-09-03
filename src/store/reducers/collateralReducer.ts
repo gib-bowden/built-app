@@ -30,12 +30,9 @@ const collateralReducer = (state: CollateralState = initState, action: Collatera
 }
 
 const createNewCollateral = (state: CollateralState, newCollateral: Collateral): Collateral => {
-    debugger;
     let currentIds = state.collateral.map(c => c.id as number)
     let nextId = Math.max(...currentIds) + 1
-    let returnItem = {...newCollateral, id: nextId}
-    console.log(returnItem)
-    return returnItem
+    return {...newCollateral, id: nextId}
 }
 
 export default collateralReducer

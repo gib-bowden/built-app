@@ -9,3 +9,8 @@ export interface LoanInfo  {
     loanCollateral?: Array<Collateral>
 
 }
+
+export enum LoanInfoTypes {
+    budget,
+    loanDetails
+}

@@ -1,27 +1,5 @@
 import { Collateral, CollateralActions, CollateralActionType } from "../types/collateralTypes"
 
-// export const createCollateral = (collateral: Collateral): CollateralActions => {
-//     return {
-//         type: ADD_COLLATERAL,
-//         collateral
-//     }
-// }
-
-// export const deleteCollateral = (collateralId: number): CollateralActions => {
-//     return {
-//         type: DELETE_COLLATERAL,
-//         id: collateralId
-//     }
-// }
-
-// export const updateCollateral = (collateral: Collateral): CollateralActions => {
-//     return {
-//         type: UPDATE_COLLATERAL,
-//         collateral
-//     }
-// }
-
-
 export const collateralActions = {
     createCollateral(collateral: Collateral): CollateralActions {
         return {

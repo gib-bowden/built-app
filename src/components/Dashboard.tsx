@@ -1,7 +1,7 @@
-import React, { Component, ChangeEvent, FormEvent } from "react";
+import React, { Component} from "react";
 import { connect } from "react-redux";
 import { RootState } from "../store/reducers/rootReducer";
-import { LoanInfo } from "../common/types";
+import { LoanInfo, LoanInfoTypes } from "../common/types";
 import LoanDetail from "./LoanDetail";
 import { loanActions } from '../store/actions/loanActions'
 import {Dispatch, bindActionCreators} from 'redux'
@@ -12,7 +12,8 @@ import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 import { Collateral, CollateralActions } from "../store/types/collateralTypes";
 import { collateralActions } from "../store/actions/collateralActions";
-import { FirstDataRenderedEvent, GridApi, ColumnApi } from "ag-grid-community";
+import { FirstDataRenderedEvent, GridApi, ColumnApi, RowClickedEvent } from "ag-grid-community";
+import AddCollateral from "./AddCollateral";
 
 interface StoreToProps {
     loans: Array<LoanInfo>
@@ -40,21 +41,11 @@ interface Props extends StoreToProps, DispatchToProps {
 }
 
 interface State {
-    newCollateral: Collateral
+    selectedLoan: LoanInfo
 }
 
-class Dashboard extends Component<Props> {
+class Dashboard extends Component<Props, State> {
     
-    emptyCollateral: Collateral = {
-        type: '',
-        loanId: -1,
-        value: -1
-    }
-
-    readonly state: State = {
-        newCollateral: {...this.emptyCollateral}
-    }  
-
     gridApi: GridApi | undefined
     gridColumnApi: ColumnApi | undefined;
     
@@ -72,14 +63,21 @@ class Dashboard extends Component<Props> {
         resizable: true,
     };
 
-    resetState = () => {
-        this.setState({ newCollateral: {...this.emptyCollateral} }) 
-    }
+
 
     onGridReady = (params:FirstDataRenderedEvent) => {
         this.gridApi = params.api as GridApi;
         this.gridColumnApi = params.columnApi as ColumnApi;
     };
+
+    handleRowSelected = ( e: RowClickedEvent ): void => {    
+        if (e.node.isSelected()) {
+            let selection = e.data as Collateral
+            let selectedLoan = this.props.loans.find(l => l.loanId === selection.loanId)
+            if (selectedLoan) this.setState({selectedLoan});
+        }
+
+    }
 
     
     deleteCollateral = (): void => {
@@ -93,61 +91,43 @@ class Dashboard extends Component<Props> {
        this.props.collateralActions.deleteCollateral(ids)
     }
 
-    addCollateral = (e: FormEvent<HTMLFormElement>): void => {
-        e.preventDefault();
-        this.props.collateralActions.createCollateral(this.state.newCollateral)
-        this.resetState()
-    }
-
-    handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>):void => {
-        let newState = {...this.state, newCollateral: {...this.state.newCollateral}}
-        let id: string = e.target.id;
-        if (id === 'value') newState.newCollateral.value = parseInt(e.target.value, 10)
-        if (id === 'type') newState.newCollateral.type = e.target.value
-        if (id === 'loanId') newState.newCollateral.loanId = parseInt(e.target.value, 10)
-
-        this.setState(newState);
-
-    }
-
     render() {
-        let loanDetailList = this.props.loans && this.props.loans.map(loan => {
-            return (
-                <LoanDetail 
-                    loanInfo = {loan} key={loan.loanId}
-                    // handleClick = {() => this.props.deleteLoan(loan.loanId)}
-                    handleClick = {() => this.props.loanActions.deleteLoan(loan.loanId)}
-                />
-            )
-        })
 
         return (
-            <div>
-                <div className="project-list">
-                    <h1>Project List</h1>
-                    <ul>{loanDetailList}</ul>
-                </div>
-                <div id="myGrid" style={{ height: 300 }} className="ag-theme-alpine">
-                    <form onSubmit={this.addCollateral} className="addCollateral">
-                        <input onChange={this.handleChange} id="loanId" placeholder="Loan ID"></input>  
-                        <input onChange={this.handleChange} id="type" placeholder="Collateral Type"></input>  
-                        <input onChange={this.handleChange} id="value" placeholder="Collateral Value"></input>  
-                        <button className="btn pink lighten-1 z-depth-0">Create</button>
-                    </form>
-                    <button onClick={() => this.deleteCollateral()}>Delete Collateral</button>
-                    <AgGridReact
-                        rowData={this.props.collateral}
-                        columnDefs={this.colDefs}
-                        immutableData={true}
-                        getRowNodeId={data => data.id}
-                        onGridReady={this.onGridReady}
-                        defaultColDef={this.defaultColDef}
-                        rowSelection={"multiple"}
-                        onFirstDataRendered={params => params.api.sizeColumnsToFit()}
-                    ></AgGridReact>
-                </div>
-            </div>       
+            <div className="dashboard container">  
+                <div className="row">
+                    <h5>Collateral</h5>
+                </div>                        
+                <div className="flex-container">
+                    <div className="collateral-list flex-child">
+                        <h6>List</h6>
+                        <div id="myGrid" style={{ height: 300 }} className="ag-theme-alpine">
+                            <AgGridReact
+                                rowData={this.props.collateral}
+                                columnDefs={this.colDefs}
+                                immutableData={true}
+                                getRowNodeId={data => data.id}
+                                rowSelection={'single'}
+                                onRowSelected={this.handleRowSelected}
+                                onGridReady={this.onGridReady}
+                                defaultColDef={this.defaultColDef}
+                                onFirstDataRendered={params => params.api.sizeColumnsToFit()}
+                            ></AgGridReact>
+                        </div>
+                        <button className="btn pink lighten-1 z-depth-0" onClick={() => this.deleteCollateral()}>Delete Collateral</button> 
 
+                    </div>
+                    <div className="add-collateral flex-child">
+                        <h6>Add Collateral</h6>
+                        <AddCollateral />
+                    </div>
+                </div> 
+                <div className="flex-container">
+                    <div className="budget-detail flex-child">
+                        {(this.state?.selectedLoan) ? (<LoanDetail loanInfo={this.state.selectedLoan} type={LoanInfoTypes.budget} /> ) : null }    
+                    </div>
+                </div>               
+            </div>      
         )
     }
 }
@@ -169,8 +149,6 @@ const mapStateToProps = (state:RootState): StoreToProps => {
 
 const mapDispatchToProps = (dispatch: Dispatch) : DispatchToProps => {
     return {
-        // deleteLoan: (loanId: number) => dispatch(deleteLoan(loanId)),
-        // createLoan: (loan: Loan) => dispatch(createLoan(loan)) 
         loanActions: bindActionCreators(loanActions, dispatch),
         collateralActions: bindActionCreators(collateralActions, dispatch)
     }
