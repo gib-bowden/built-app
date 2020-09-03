@@ -1,6 +1,6 @@
 import { CollateralState, CollateralActions, CollateralActionType, Collateral } from "../types/collateralTypes";
 
-const initState: CollateralState = {
+export const initState: CollateralState = {
     collateral: [
         {id: 1, loanId: 1, type: "buliding", value: 14000},
         {id: 2, loanId: 3, type: "land", value: 14000},

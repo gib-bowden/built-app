@@ -21,8 +21,7 @@ interface StoreToProps {
  }
 
 interface DispatchToProps {
-    // deleteLoan: (loanId: number) => void,
-    // createLoan: (loan: Loan) => void
+    //QUESTION: does this interface make sense here? Or should I define it somewhere else? 
     loanActions: {
         createLoan: (loan:Loan) => LoanActions,
         deleteLoan: (loanId:number) => LoanActions,
@@ -37,7 +36,7 @@ interface DispatchToProps {
 }
 
 interface Props extends StoreToProps, DispatchToProps {
-
+    //Question: Does this make sense? 
 }
 
 interface State {
@@ -46,11 +45,11 @@ interface State {
 
 class Dashboard extends Component<Props, State> {
     
-    gridApi: GridApi | undefined
+    //Best way to define these properties? 
+    gridApi: GridApi | undefined;
     gridColumnApi: ColumnApi | undefined;
     
     colDefs = [
-        { field: "id", checkboxSelection: true },
         { field: "type" },
         { field: "value"},
         { field: "loanId"}
@@ -63,36 +62,35 @@ class Dashboard extends Component<Props, State> {
         resizable: true,
     };
 
-
-
+    //this gives class props access to the grid api when the grid is rendered
     onGridReady = (params:FirstDataRenderedEvent) => {
         this.gridApi = params.api as GridApi;
         this.gridColumnApi = params.columnApi as ColumnApi;
     };
 
     handleRowSelected = ( e: RowClickedEvent ): void => {    
+        //fires on selected & deselect, must check if row(node) is incoming as selected
         if (e.node.isSelected()) {
-            let selection = e.data as Collateral
-            let selectedLoan = this.props.loans.find(l => l.loanId === selection.loanId)
+            let selection = e.data as Collateral;
+            let selectedLoan = this.props.loans.find(l => l.loanId === selection.loanId);
             if (selectedLoan) this.setState({selectedLoan});
         }
 
-    }
-
+    };
     
     deleteCollateral = (): void => {
-       let ids = [] as number[];
+        //best way to define empty array of numbers, or use construtor? 
+        let ids = [] as number[];
 
-       this.gridApi?.forEachNode(node => {
-           if (node.isSelected()) {
-               ids.push(node.data.id)
-           }
-       }) 
+        this.gridApi?.forEachNode(node => {
+            if (node.isSelected()) {
+                ids.push(node.data.id)
+            }
+        }) 
        this.props.collateralActions.deleteCollateral(ids)
     }
 
     render() {
-
         return (
             <div className="dashboard container">  
                 <div className="row">
