@@ -1,14 +1,23 @@
-import React, { Component } from "react";
+import React, { Component} from "react";
 import { connect } from "react-redux";
 import { RootState } from "../store/reducers/rootReducer";
-import { LoanInfo } from "../common/types";
+import { LoanInfo, LoanInfoTypes } from "../common/types";
 import LoanDetail from "./LoanDetail";
 import { loanActions } from '../store/actions/loanActions'
 import {Dispatch, bindActionCreators} from 'redux'
 import { Loan, LoanActions } from "../store/types/loanTypes";
 
+import { AgGridReact } from "ag-grid-react";
+import 'ag-grid-community/dist/styles/ag-grid.css';
+import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
+import { Collateral, CollateralActions } from "../store/types/collateralTypes";
+import { collateralActions } from "../store/actions/collateralActions";
+import { FirstDataRenderedEvent, GridApi, ColumnApi, RowClickedEvent } from "ag-grid-community";
+import AddCollateral from "./AddCollateral";
+
 interface StoreToProps {
     loans: Array<LoanInfo>
+    collateral: Array<Collateral>
  }
 
 interface DispatchToProps {
@@ -19,33 +28,106 @@ interface DispatchToProps {
         deleteLoan: (loanId:number) => LoanActions,
         updateLoan: (loan:Loan) => LoanActions
     }
+
+    collateralActions: {
+        createCollateral: (collateral: Collateral) => CollateralActions,
+        deleteCollateral: (ids: Array<number>) => CollateralActions,
+        updateCollateral: (collateral: Collateral) => CollateralActions
+    }
 }
 
 interface Props extends StoreToProps, DispatchToProps {
 
 }
 
-class Dashboard extends Component<Props> {
+interface State {
+    selectedLoan: LoanInfo
+}
+
+class Dashboard extends Component<Props, State> {
     
+    gridApi: GridApi | undefined
+    gridColumnApi: ColumnApi | undefined;
+    
+    colDefs = [
+        { field: "id", checkboxSelection: true },
+        { field: "type" },
+        { field: "value"},
+        { field: "loanId"}
+      ];
+      
+    defaultColDef = { 
+        flex: 1,
+        minWidth: 100,
+        sortable: true,
+        resizable: true,
+    };
+
+
+
+    onGridReady = (params:FirstDataRenderedEvent) => {
+        this.gridApi = params.api as GridApi;
+        this.gridColumnApi = params.columnApi as ColumnApi;
+    };
+
+    handleRowSelected = ( e: RowClickedEvent ): void => {    
+        if (e.node.isSelected()) {
+            let selection = e.data as Collateral
+            let selectedLoan = this.props.loans.find(l => l.loanId === selection.loanId)
+            if (selectedLoan) this.setState({selectedLoan});
+        }
+
+    }
+
+    
+    deleteCollateral = (): void => {
+       let ids = [] as number[];
+
+       this.gridApi?.forEachNode(node => {
+           if (node.isSelected()) {
+               ids.push(node.data.id)
+           }
+       }) 
+       this.props.collateralActions.deleteCollateral(ids)
+    }
+
     render() {
-        let loanDetailList = this.props.loans && this.props.loans.map(loan => {
-            return (
-                <LoanDetail 
-                    loanInfo = {loan} key={loan.loanId}
-                    // handleClick = {() => this.props.deleteLoan(loan.loanId)}
-                    handleClick = {() => this.props.loanActions.deleteLoan(loan.loanId)}
-                />
-            )
-        })
 
         return (
-            <div className="project-list">
-                <h1>Project List</h1>
-                <ul>
-                    {loanDetailList}
-                </ul>
-            </div>
+            <div className="dashboard container">  
+                <div className="row">
+                    <h5>Collateral</h5>
+                </div>                        
+                <div className="flex-container">
+                    <div className="collateral-list flex-child">
+                        <h6>List</h6>
+                        <div id="myGrid" style={{ height: 300 }} className="ag-theme-alpine">
+                            <AgGridReact
+                                rowData={this.props.collateral}
+                                columnDefs={this.colDefs}
+                                immutableData={true}
+                                getRowNodeId={data => data.id}
+                                rowSelection={'single'}
+                                onRowSelected={this.handleRowSelected}
+                                onGridReady={this.onGridReady}
+                                defaultColDef={this.defaultColDef}
+                                onFirstDataRendered={params => params.api.sizeColumnsToFit()}
+                            ></AgGridReact>
+                        </div>
+                        <button className="btn pink lighten-1 z-depth-0" onClick={() => this.deleteCollateral()}>Delete Collateral</button> 
 
+                    </div>
+                    <div className="add-collateral flex-child">
+                        <h6>Add Collateral</h6>
+                        <AddCollateral />
+                    </div>
+                </div> 
+                <div className="flex-container">
+                    <div className="budget-detail flex-child">
+                        {(this.state?.selectedLoan) ? (<LoanDetail loanInfo={this.state.selectedLoan} type={LoanInfoTypes.budget} /> ) : null }    
+                    </div>
+                </div>               
+            </div>      
         )
     }
 }
@@ -60,16 +142,20 @@ const mapStateToProps = (state:RootState): StoreToProps => {
         loans.push({loanId, loanBudget, loanCollateral, loanDetails})
     })
     return {
-        loans
+        loans,
+        ...state.collateral
     }
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) : DispatchToProps => {
     return {
-        // deleteLoan: (loanId: number) => dispatch(deleteLoan(loanId)),
-        // createLoan: (loan: Loan) => dispatch(createLoan(loan)) 
-        loanActions: bindActionCreators(loanActions, dispatch)
+        loanActions: bindActionCreators(loanActions, dispatch),
+        collateralActions: bindActionCreators(collateralActions, dispatch)
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
+export default connect(
+    mapStateToProps, 
+    mapDispatchToProps,
+    null,
+    { forwardRef: true })(Dashboard);

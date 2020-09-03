@@ -14,8 +14,7 @@ export interface LoanState {
 export enum LoanActionType {
     ADD_LOAN = 'ADD_LOAN',
     DELETE_LOAN = 'DELETE_LOAN',
-    UPDATE_LOAN = 'UPDATE_LOAN',
-    GET_LOANS = 'GET_LOANS'   
+    UPDATE_LOAN = 'UPDATE_LOAN'  
 }
 
 
@@ -35,8 +34,4 @@ interface UpdateLoanAction {
     loan: Loan
 }
 
-interface GetLoansAction {
-    type: LoanActionType.GET_LOANS
-}
-
-export type LoanActions = AddLoanAction | DeleteLoanAction | UpdateLoanAction | GetLoansAction
+export type LoanActions = AddLoanAction | DeleteLoanAction | UpdateLoanAction

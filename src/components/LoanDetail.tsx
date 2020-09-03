@@ -1,28 +1,37 @@
 import React, { FunctionComponent } from 'react'
-import { LoanInfo } from '../common/types'
+import { LoanInfo, LoanInfoTypes } from '../common/types'
 
 interface Props {
     loanInfo: LoanInfo,
-    handleClick: () => void 
+    type: LoanInfoTypes
 }
 
 
-const LoanDetail: FunctionComponent<Props> = ({loanInfo, handleClick}) => {
-    return (
-        <div>
-            <h1>{loanInfo.loanId}</h1>
-            <div>
-                <ul>
-                    {(loanInfo.loanCollateral && loanInfo.loanCollateral.map((c) => {
-                        return (
-                            <li key={c.collateralId}>`Type: ${c.type.toString()}; Value: ${c.value}`</li>
-                        )
-                    }))}
-                </ul>
+const LoanDetail: FunctionComponent<Props> = ({loanInfo, type}) => {
+    if (type === LoanInfoTypes.budget) {
+        let remainingAmount = -1;
+        if (loanInfo?.loanBudget?.budgetAmount && loanInfo?.loanBudget?.spendAmount) {
+           remainingAmount = loanInfo?.loanBudget?.budgetAmount - loanInfo?.loanBudget?.spendAmount
+        }
+        return (
+            <div className="row">
+            <div className="col s12 m6">
+              <div className="card blue-grey darken-1">
+                <div className="card-content white-text">
+                    <h5>Loan Number: {loanInfo.loanId}</h5>
+                    <p>Budget Amount</p> 
+                  <span className="card-title">{loanInfo.loanBudget?.budgetAmount}</span>
+                  <p>Spend</p>
+                  <span className="card-title">{loanInfo.loanBudget?.spendAmount}</span>
+                  <p>Remaining</p>
+                  <span className="card-title">{remainingAmount}</span>
+                </div>
+              </div>
             </div>
-            <button onClick={handleClick} id="delete">Delete</button>
-        </div>
-    )
+          </div>
+        )
+    } return (null)
+
 }
 
 export default LoanDetail
